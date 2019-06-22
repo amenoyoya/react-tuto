@@ -167,7 +167,7 @@ $ yarn start
 
 ***
 
-## React導入 (0.5H)
+## React導入 (0.75H)
 
 ### What's React?
 React
@@ -315,6 +315,153 @@ $ yarn start
 ```
 
 ![react-get-started](./screenshot/01.react.png)
+
+##### Error: ENOSPC: System limit for number of file watchers reached, ...
+Unix系OSを使っていると、Reactプロジェクトの開発サーバー実行時に上記のエラーが出ることがある
+
+これはファイル監視の上限を超えている場合に出るエラーらしい
+
+以下のコマンドでファイル監視の上限を引き上げれば上手く行くはず
+
+参考: https://stackoverflow.com/questions/50793920/enospc-error-in-create-react-app
+
+```bash
+# ファイル監視の上限を524288にする
+$ echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf
+
+# /etc/sysctl.conf の設定を再読込
+$ sudo sysctl -p
+```
+
+***
+
+## webpackでcssバンドル (0.25H)
+
+### Install loaders
+```bash
+# cssバンドル用に必要な style-loader, css-loader インストール
+$ yarn add -D style-loader css-loader
+```
+
+---
+
+### Configure webpack
+`webpack.config.js`にcssバンドル用の設定を加える
+
+- **webpack.config.js**
+    ```javascript
+    module.exports = {
+        // 〜省略〜
+        // モジュール設定
+        module: {
+            rules: [
+                // 〜省略〜
+                {
+                    // .css ファイル: css-loader => style-loader の順に適用
+                    // - css-loader: cssをJSにトランスコンパイル
+                    // - style-loader: <link>タグにスタイル展開
+                    test: /\.css$/,
+                    use: [
+                        "style-loader",
+                        {
+                            loader: "css-loader",
+                            options: { url: false }
+                        }
+                    ]
+                }
+            ]
+        }
+    };
+    ```
+
+---
+
+### Reactアプリケーションにcss適用
+`src/style.css`を作成し、`src/index.jsx`から読み込んでみる
+
+- **src/style.css**
+    ```css
+    :root {
+        --blue: #007bff;
+        --indigo: #6610f2;
+        --purple: #6f42c1;
+        --pink: #e83e8c;
+        --red: #dc3545;
+        --orange: #fd7e14;
+        --yellow: #ffc107;
+        --green: #28a745;
+        --teal: #20c997;
+        --cyan: #17a2b8;
+        --white: #fff;
+        --gray: #6c757d;
+        --gray-dark: #343a40;
+        --primary: #007bff;
+        --secondary: #6c757d;
+        --success: #28a745;
+        --info: #17a2b8;
+        --warning: #ffc107;
+        --danger: #dc3545;
+        --light: #f8f9fa;
+        --dark: #343a40;
+        --breakpoint-xs: 0;
+        --breakpoint-sm: 576px;
+        --breakpoint-md: 768px;
+        --breakpoint-lg: 992px;
+        --breakpoint-xl: 1200px;
+        --font-family-sans-serif: -apple-system, "BlinkMacSystemFont", "Helvetica Neue", Helvetica, "Arial", "ヒラギノ角ゴ ProN W3", "Hiragino Kaku Gothic ProN", "メイリオ", Meiryo, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+        --font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+    
+    *,
+    *::before,
+    *::after {
+        box-sizing: border-box;
+    }
+    
+    html {
+        font-family: sans-serif;
+        line-height: 1.15;
+        -webkit-text-size-adjust: 100%;
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    }
+
+    article, aside, figcaption, figure, footer, header, hgroup, main, nav, section {
+        display: block;
+    }
+
+    body {
+        margin: 0 auto;
+        width: 80%;
+        font-family: -apple-system, "BlinkMacSystemFont", "Helvetica Neue", Helvetica, "Arial", "ヒラギノ角ゴ ProN W3", "Hiragino Kaku Gothic ProN", "メイリオ", Meiryo, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+        font-size: 1rem;
+        font-weight: 400;
+        line-height: 1.5;
+        color: #212529;
+        text-align: left;
+        background-color: #fff;
+    }
+
+    ul, ol {
+        color: #1e366a;
+        border-top: solid #1e366a 1px;
+        border-bottom: solid #1e366a 1px;
+        padding: 0.5em 1.5em;
+    }
+    
+    ul li, ol li {
+        line-height: 1.5;
+        padding: 0.5em 0;
+    }
+    ```
+- **src/index.jsx**
+    ```javascript
+    // style.cssを取り込む
+    import './style.css';
+
+    // 〜省略〜
+    ```
+
+![css-in-react](./screenshot/02.css.png)
 
 ***
 
@@ -467,20 +614,3 @@ $ yarn start
 ```
 
 ![screenshot](./screenshot/00.index.png)
-
-##### Error: ENOSPC: System limit for number of file watchers reached, ...
-Unix系OSを使っていると、Reactプロジェクトの開発サーバー実行時に上記のエラーが出ることがある
-
-これはファイル監視の上限を超えている場合に出るエラーらしい
-
-以下のコマンドでファイル監視の上限を引き上げれば上手く行くはず
-
-参考: https://stackoverflow.com/questions/50793920/enospc-error-in-create-react-app
-
-```bash
-# ファイル監視の上限を524288にする
-$ echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf
-
-# /etc/sysctl.conf の設定を再読込
-$ sudo sysctl -p
-```

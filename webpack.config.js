@@ -31,6 +31,19 @@ module.exports = {
                         ["@babel/react"]
                     ]
                 }
+            },
+            {
+                // .css ファイル: css-loader => style-loader の順に適用
+                // - css-loader: cssをJSにトランスコンパイル
+                // - style-loader: <link>タグにスタイル展開
+                test: /\.css$/,
+                use: [
+                    "style-loader",
+                    {
+                        loader: "css-loader",
+                        options: { url: false }
+                    }
+                ]
             }
         ]
     },
