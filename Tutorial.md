@@ -559,3 +559,203 @@ Boardの`handleClick`メソッドを修正し、ゲームの決着が既につ�
 以上の修正で、ゲームとしての最低限の実装は完了となる
 
 ![game-winner](./screenshot/06.winner.png)
+
+---
+
+### 着手履歴の保存
+最後の練習として、以前の着手まで「時間を巻き戻す」機能を実装する
+
+- 過去の`squares`の配列を、`history`という名前の別の配列に保存する
+    - 以下のような構造になる想定
+    ```javascript
+    history = [
+        // Before first move
+        {
+            squares: [
+                null, null, null,
+                null, null, null,
+                null, null, null,
+            ]
+        },
+        // After first move
+        {
+            squares: [
+                null, null, null,
+                null, 'X', null,
+                null, null, null,
+            ]
+        },
+        // After second move
+        {
+            squares: [
+                null, null, null,
+                null, 'X', null,
+                null, null, 'O',
+            ]
+        },
+        // ...
+    ]
+    ```
+- トップレベル・コンポーネントのGame内で過去の着手の履歴を表示することにする
+    - => `history` stateは Gameコンポーネントに置くことにする
+    - => `squares` state を、Gameの子である Boardコンポーネントから取り除くことが可能になる（**Stateのリフトアップ**）
+
+Gameコンポーネントを以下のように修正する    
+
+- **src/index.jsx**
+    ```diff
+    class Game extends React.Component {
+    +   // コンストラクタ
+    +   constructor(props) {
+    +       super(props);
+    +       // 盤面（3ｘ3のSquare）の状態の履歴を保持
+    +       this.state = {
+    +           history: [{
+    +               squares: Array(9).fill(null),
+    +           }],
+    +           // 次の手番が"X"かどうかの状態を保持
+    +           xIsNext: true,
+    +       };
+    +   }
+    ```
+
+次に、Boardコンポーネントが `squares`, `onClick`プロパティを Gameコンポーネントから受け取るように変更する
+
+- Board の `constructor` を削除する
+- Board の `handleClick`メソッドを Game にリフトアップする
+    - Board の `renderSquare` にある `this.state.squares[i]` を `this.props.squares[i]` に置き換える
+    - Board の `renderSquare` にある `this.handleClick(i)` を `this.props.onClick(i)` に置き換える
+- Board の `render` にある勝敗判定を Game にリフトアップする
+
+以上のリファクタリングを実行すると以下のようになる
+
+- **src/index.jsx**
+    ```diff
+    class Board extends React.Component {
+    -   constructor(props) {
+    -       super(props);
+    -       this.state = {
+    -           squares: Array(9).fill(null),
+    -           xIsNext: true
+    -       };
+    -   }
+
+        renderSquare(i) {
+    +       // Square.value <= Board.props.squares[i] <= Game.squares[i]
+    +       // Square.onClick <= Board.props.onClick(i) <= Game.handleClick(i)
+            return (
+                <Square
+    -               value={this.state.squares[i]}
+    -               onClick={() => this.handleClick(i)}
+    +               value={this.props.squares[i]}
+    +               onClick={() => this.props.onClick(i)}
+                />
+            );
+        }
+        
+    -   handleClick(i) {
+    -       const squares = this.state.squares.slice();
+    -       if (calculateWinner(squares) || squares[i]) {
+    -           return;
+    -       }
+    -       squares[i] = this.state.xIsNext ? 'X' : 'O';
+    -       this.setState({
+    -           squares: squares,
+    -           xIsNext: !this.state.xIsNext,
+    -       });
+    -   }
+
+        render() {
+    -       // 勝者判定
+    -       const winner = calculateWinner(this.state.squares);
+    -       let status;
+    -       if (winner) {
+    -           // 勝敗がついている場合は、勝者を表示
+    -           status = 'Winner: ' + winner;
+    -       } else {
+    -           // 未決着なら、次の着手プレイヤーを表示
+    -           status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
+    -       }
+            return (
+                <div>
+    -               <div className="status">{status}</div>
+                    <div className="board-row">
+                    {this.renderSquare(0)}
+                    {this.renderSquare(1)}
+                    {this.renderSquare(2)}
+                    </div>
+                    <div className="board-row">
+                    {this.renderSquare(3)}
+                    {this.renderSquare(4)}
+                    {this.renderSquare(5)}
+                    </div>
+                    <div className="board-row">
+                    {this.renderSquare(6)}
+                    {this.renderSquare(7)}
+                    {this.renderSquare(8)}
+                    </div>
+                </div>
+            );
+        }
+    }
+
+    class Game extends React.Component {
+        // 〜省略〜
+
+    +   // 各Squareクリック時: squares[i] の状態（"O" | "X" | null）を変更
+    +   handleClick(i) {
+    +       // 盤面履歴の最新状態をコピーしてくる
+    +       const history = this.state.history;
+    +       const current = history[history.length - 1];
+    +       const squares = current.squares.slice();
+    +       // 勝敗がついている場合や、すでに着手済みのマスの場合は、着手不可とする
+    +       if (calculateWinner(squares) || squares[i]) {
+    +           return;
+    +       }
+    +       // xIsNextの値からマスに書き込む値（"O" | "X"）を決定
+    +       squares[i] = this.state.xIsNext ? 'X' : 'O';
+    +       // Game状態の更新
+    +       this.setState({
+    +           // 着手後の盤面状態を履歴に追加
+    +           history: history.concat([
+    +               {
+    +                   squares: squares,
+    +               }
+    +           ]),
+    +           // 着手の度にxIsNextの値を反転
+    +           xIsNext: !this.state.xIsNext,
+    +       });
+    +   }
+        
+        render() {
+    +       // 盤面履歴の最新状態から勝者判定
+    +       const history = this.state.history;
+    +       const current = history[history.length - 1];
+    +       const winner = calculateWinner(current.squares);
+    +       let status;
+    +       if (winner) {
+    +           // 勝敗がついている場合は、勝者を表示
+    +           status = 'Winner: ' + winner;
+    +       } else {
+    +           // 未決着なら、次の着手プレイヤーを表示
+    +           status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
+    +       }
+            return (
+                <div className="game">
+                    <div className="game-board">
+    -                   <Board />
+    +                   <Board
+    +                       squares={current.squares}
+    +                       onClick={(i) => this.handleClick(i)}
+    +                   />
+                    </div>
+                    <div className="game-info">
+    -                   <div>{/* status */}</div>
+    +                   <div>{status}</div>
+                        <ol>{/* TODO */}</ol>
+                    </div>
+                </div>
+            );
+        }
+    }
+    ```
