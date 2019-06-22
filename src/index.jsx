@@ -7,23 +7,15 @@ import './index.css';
  * - Usage: <Square />
  */
 class Square extends React.Component {
-    // コンストラクタ
-    constructor(props) {
-        super(props); // React.Componentのコンストラクタを呼ぶ
-        // 状態として value を持つ
-        this.state = {
-            value: null,
-        };
-    }
-    
+    // クリック時に 親コンポーネントからprops経由で渡される onClick を実行
+    // 親コンポーネントからprops経由で渡される value を表示
     render() {
-        // クリック時に this.state.value = 'X' を設定
         return (
             <button
                 className="square"
-                onClick={() => this.setState({value: 'X'})}
+                onClick={() => this.props.onClick()}
             >
-                {this.state.value}
+                {this.props.value}
             </button>
         );
     }
@@ -34,8 +26,35 @@ class Square extends React.Component {
  * - Usage: <Board />
  */
 class Board extends React.Component {
+    // コンストラクタ
+    constructor(props) {
+        super(props);
+        // 3ｘ3のSquareの状態を保持する
+        this.state = {
+            squares: Array(9).fill(null),
+        };
+    }
+
+    // 各Squareを描画するメソッド
     renderSquare(i) {
-        return <Square value={i} />;
+        // Square の onClick イベントで Board.handleClickメソッドを呼び出す
+        return (
+            <Square
+                value={this.state.squares[i]}
+                onClick={() => this.handleClick(i)}
+            />
+        );
+    }
+
+    // 各Squareクリック時: squares[i] の状態（"O" | "X" | null）を変更
+    handleClick(i) {
+        /**
+         * squares[i]の値を直接書き換え（ミューテート）しないようにして、
+         * 以下のようにコピー（slice）に変更を加えてから setState した方が良い（イミュータビリティ）
+         */
+        const squares = this.state.squares.slice();
+        squares[i] = 'X';
+        this.setState({squares: squares});
     }
 
     render() {

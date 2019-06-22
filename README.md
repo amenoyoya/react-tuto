@@ -465,6 +465,6 @@ $ yarn add -D style-loader css-loader
 
 ***
 
-## Tutorial (1.5H)
+## Tutorial (3H)
 
 Show [Tutorial.md](./Tutorial.md)
