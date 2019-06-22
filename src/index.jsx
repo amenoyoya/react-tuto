@@ -69,9 +69,18 @@ class Game extends React.Component {
             history: [{
                 squares: Array(9).fill(null),
             }],
-            // 次の手番が"X"かどうかの状態を保持
-            xIsNext: true,
+            stepNumber: 0, // 現在見ている盤面状態のindex
+            xIsNext: true, // 次の手番が"X"かどうかの状態
         };
+    }
+
+    // 過去のゲーム盤面にジャンプする
+    jumpTo(index) {
+        this.setState({
+            stepNumber: index,
+            // ゲームターンが偶数の場合"X"のターン
+            xIsNext: (index % 2) === 0,
+        });
     }
 
     // 各Squareクリック時: squares[i] の状態（"O" | "X" | null）を変更
@@ -80,8 +89,8 @@ class Game extends React.Component {
          * squares[i]の値を直接書き換え（ミューテート）しないようにして、
          * 以下のようにコピー（slice）に変更を加えてから setState した方が良い（イミュータビリティ）
          */
-        // 盤面履歴の最新状態をコピーしてくる
-        const history = this.state.history;
+        // 現在見ている盤面履歴の状態をコピーしてくる
+        const history = this.state.history.slice(0, this.state.stepNumber + 1);
         const current = history[history.length - 1];
         const squares = current.squares.slice();
         // 勝敗がついている場合や、すでに着手済みのマスの場合は、着手不可とする
@@ -98,15 +107,17 @@ class Game extends React.Component {
                     squares: squares,
                 }
             ]),
+            // 現在見ている盤面 = 履歴の最後
+            stepNumber: history.length,
             // 着手の度にxIsNextの値を反転
             xIsNext: !this.state.xIsNext,
         });
     }
     
     render() {
-        // 盤面履歴の最新状態から勝者判定
+        // 現在見ている盤面履歴の状態から勝者判定
         const history = this.state.history;
-        const current = history[history.length - 1];
+        const current = history[this.state.stepNumber];
         const winner = calculateWinner(current.squares);
         let status;
         if (winner) {
@@ -116,6 +127,28 @@ class Game extends React.Component {
             // 未決着なら、次の着手プレイヤーを表示
             status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
         }
+
+        // 過去の盤面にジャンプするためのボタンリストを作成
+        const moves = history.map((squares, move) => {
+            /**
+             * WHEN: 履歴index（着手数）が1以上
+             * THEN: ボタン「Go to move #<index>」(onClick: jumpTo(履歴index))
+             * ELSE: ボタン「Go to game start」(onClick: jumpTo(0))
+             */
+            const desc = move ?
+                'Go to move #' + move :
+                'Go to game start';
+            /**
+             * リストが変更になった場合、Reactはどのアイテムが変更になったのかを知る必要がある
+             * => <li>タグに一意なIDを振るために keyプロパティを指定する
+             */
+            return (
+                <li key="history-{move}">
+                    <button onClick={() => this.jumpTo(move)}>{desc}</button>
+                </li>
+            );
+        });
+
         return (
             <div className="game">
                 <div className="game-board">
@@ -126,7 +159,7 @@ class Game extends React.Component {
                 </div>
                 <div className="game-info">
                     <div>{status}</div>
-                    <ol>{/* TODO */}</ol>
+                    <ol>{moves}</ol>
                 </div>
             </div>
         );

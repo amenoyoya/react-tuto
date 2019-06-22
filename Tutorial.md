@@ -759,3 +759,144 @@ Gameコンポーネントを以下のように修正する
         }
     }
     ```
+
+---
+
+### 過去の着手の表示
+三目並べの履歴を記録しているため、これを過去の着手のリストとしてプレーヤに表示することが可能
+
+JavaScriptでは、配列に `map`メソッドが存在しており、データを別のデータにマッピングすることができる
+
+```javascript
+// map の例: [1, 2, 3] * 2 => [2, 4, 6]
+const numbers = [1, 2, 3];
+const doubled = numbers.map(x => x * 2);
+```
+
+`map`メソッドを使うことで、着手履歴の配列をマップして画面上のボタンを表現するReact要素を作りだし、過去の手番に「ジャンプ」するためのボタンの一覧を表示する
+
+- **src/index.jsx**
+    ```diff
+    render() {
+        const history = this.state.history;
+        const current = history[history.length - 1];
+        const winner = calculateWinner(current.squares);
+        // 〜省略〜
+    +   // 過去の盤面にジャンプするためのボタンリストを作成
+    +   const moves = history.map((squares, move) => {
+    +       /**
+    +        * WHEN: 履歴index（着手数）が1以上
+    +        * THEN: ボタン「Go to move #<index>」(onClick: jumpTo(履歴index))
+    +        * ELSE: ボタン「Go to game start」(onClick: jumpTo(0))
+    +        */
+    +       const desc = move ?
+    +           'Go to move #' + move :
+    +           'Go to game start';
+    +　　　　/**
+    +        * リストが変更になった場合、Reactはどのアイテムが変更になったのかを知る必要がある
+    +        * => <li>タグに一意なIDを振るために keyプロパティを指定する
+    +        */
+    +       return (
+    +           <li key="history-{move}">
+    +               <button onClick={() => this.jumpTo(move)}>{desc}</button>
+    +           </li>
+    +       );
+    +   });
+        
+        return (
+            <div className="game">
+                <div className="game-board">
+                    <Board
+                        squares={current.squares}
+                        onClick={(i) => this.handleClick(i)}
+                    />
+                </div>
+                <div className="game-info">
+                    <div>{status}</div>
+    -               <ol>{/* TODO */}</ol>
+    +               <ol>{moves}</ol>
+                </div>
+            </div>
+        );
+    }
+    ```
+
+---
+
+### タイムトラベルの実装
+`jumpTo`メソッドを実装する前に、Gameコンポーネントの`state`に `stepNumber` という値を加える
+
+`stepNumber`は、いま何手目の状態を見ているのかを表すのに使う
+
+- **src/index.jsx**
+    ```diff
+    class Game extends React.Component {
+        constructor(props) {
+            super(props);
+            this.state = {
+                history: [{
+                    squares: Array(9).fill(null),
+                }],
+    +           stepNumber: 0, // 現在見ている盤面状態のindex
+                xIsNext: true,
+            };
+        }
+    ```
+
+次に `jumpTo`メソッドを定義して `stepNumber` を更新する
+
+また、更新しようとしている `stepNumber` の値が偶数だった場合は `xIsNext` を true に設定する
+
+- **src/index.jsx**
+    ```javascript
+    class Game extends React.Component {
+        // 〜省略〜
+        // 過去のゲーム盤面にジャンプする
+        jumpTo(index) {
+            this.setState({
+                stepNumber: index,
+                // ゲームターンが偶数の場合"X"のターン
+                xIsNext: (index % 2) === 0,
+            });
+        }
+    }
+    ```
+
+`stepNumber`は現在ユーザに見せている着手を反映しているため、新しい着手が発生した場合は、`stepNumber`に`history.length`を指定する必要がある
+
+また、`this.state.history`から盤面状態を読み取っている箇所は `this.state.history.slice(0, this.state.stepNumber + 1)` に書き換える必要がある
+
+これにより、「時間の巻き戻し」をしてからその時点で新しい着手を起こした場合に、そこから見て「将来」にある履歴（もはや正しくなくなったもの）を確実に捨て去ることができる
+
+- **src/index.jsx**
+    ```diff
+    handleClick(i) {
+    -   const history = this.state.history;
+    +   // 現在見ている盤面履歴の状態をコピーしてくる
+    +   const history = this.state.history.slice(0, this.state.stepNumber + 1);
+        // 〜省略〜
+        this.setState({
+            history: history.concat([{
+                squares: squares
+            }]),
+    +       // 現在見ている盤面 = 履歴の最後
+    +       stepNumber: history.length,
+            xIsNext: !this.state.xIsNext,
+        });
+    }
+    ```
+
+最後に、Gameコンポーネントの`render`メソッドを修正し、`stepNumber`によって現在選択されている盤面状態を描画するように変更する
+
+- **src/index.jsx**
+    ```diff
+    class Game extends React.Component {
+        // 〜省略〜
+        render() {
+            const history = this.state.history;
+    -       const current = history[history.length - 1];
+    +       const current = history[this.state.stepNumber];
+            const winner = calculateWinner(current.squares);
+    ```
+
+![完成形](./screenshot/07.history.png)
