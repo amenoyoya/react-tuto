@@ -7,10 +7,23 @@ import './index.css';
  * - Usage: <Square />
  */
 class Square extends React.Component {
+    // コンストラクタ
+    constructor(props) {
+        super(props); // React.Componentのコンストラクタを呼ぶ
+        // 状態として value を持つ
+        this.state = {
+            value: null,
+        };
+    }
+    
     render() {
+        // クリック時に this.state.value = 'X' を設定
         return (
-            <button className="square">
-                {/* TODO */}
+            <button
+                className="square"
+                onClick={() => this.setState({value: 'X'})}
+            >
+                {this.state.value}
             </button>
         );
     }
@@ -22,7 +35,7 @@ class Square extends React.Component {
  */
 class Board extends React.Component {
     renderSquare(i) {
-        return <Square />;
+        return <Square value={i} />;
     }
 
     render() {

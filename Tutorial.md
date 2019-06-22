@@ -160,3 +160,106 @@ $ yarn start
 ```
 
 ![screenshot](./screenshot/03.index.png)
+
+---
+
+### データをProps経由で渡す
+Boardコンポーネントから Squareコンポーネントにデータを渡してみる
+
+Boardの`renderSquare`メソッド内で、propsとして`value`変数の値を Squareに渡すようにコードを変更する
+
+- **src/index.jsx**
+    ```diff
+    class Square extends React.Component {
+        render() {
+            return (
+            <button className="square">
+    -            {/* TODO */}
+    +            {this.props.value}
+            </button>
+            );
+        }
+    }
+    ```
+
+    ```diff
+    class Board extends React.Component {
+        renderSquare(i) {
+    -        return <Square />;
+    +        return <Square value={i} />;
+        }
+    ```
+
+![変更後](./screenshot/04.props.png)
+
+---
+
+### インタラクティブなコンポーネントを作る
+Squareコンポーネントがクリックされた場合に “X” と表示されるようにする
+
+まず、Squareコンポーネントの`render`メソッドから返されているボタンタグを、以下のように変更する
+
+- **src/index.jsx**
+    ```diff
+    class Square extends React.Component {
+        render() {
+            return (
+    -            <button className="square">
+    +            <button className="square" onClick={() => alert('click')}>
+                    {this.props.value}
+                </button>
+            );
+        }
+    }
+    ```
+
+ここでSquareをクリックすると、ブラウザでアラートが表示されるはず
+
+- 補足:
+    - `onClick={() => alert('click')}` と記載したときに `onClick`プロパティに渡しているのは関数であることに注意
+    - React はクリックされるまでこの関数を実行しない
+    - `() =>` を書くのを忘れて `onClick={alert('click')}` と書いてしまうと、コンポーネントが再レンダーされるたびにアラートが表示されてしまう
+
+次のステップとして、Squareコンポーネントに自分がクリックされたことを「覚えさせ」て、“X”マークでマスを埋めるようにさせる
+
+コンポーネントが何かを「覚える」ためには、`state`プロパティを使う
+
+Reactコンポーネントはコンストラクタで `this.state` を設定することで、状態を持つことが可能になる
+
+- **src/index.jsx**
+    ```diff
+    class Square extends React.Component {
+    +    // コンストラクタ
+    +    constructor(props) {
+    +        super(props); // React.Componentのコンストラクタを呼ぶ
+    +        // 状態として value を持つ
+    +        this.state = {
+    +            value: null,
+    +        };
+    +    }
+    ```
+
+次に Squareの`render`メソッドを書き換えて、クリックされた時に`state`の現在値を表示するように変更する
+
+- **src/index.jsx**
+    ```diff
+    class Square extends React.Component {
+        // 〜省略〜
+        render() {
+            // クリック時に this.state.value = 'X' を設定
+            return (
+                <button
+                    className="square"
+    +                onClick={() => this.setState({value: 'X'})}
+                >
+    -                {this.props.value}
+    +                {this.state.value}
+                </button>
+            );
+        }
+    }
+    ```
+    - `<button>`タグ内の `this.props.value` を `this.state.value` に置き換える
+    - `onClick={...}` というイベントハンドラを `onClick={() => this.setState({value: 'X'})}` に書き換える
+    - 可読性のため、`className`と`onClick`のプロパティをそれぞれ独立した行に配置
+
