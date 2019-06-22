@@ -167,15 +167,154 @@ $ yarn start
 
 ***
 
-## React導入 (0.25H)
+## React導入 (0.5H)
 
-### Create React Project
+### What's React?
+React
+: UIを効率よく構築するためのコポーネントベースJavaScriptライブラリ
+JSXというシンタックスで記述されるため、BabelでES5にトランスコンパイルする必要がある
+
+JSX
+: DeNAによって開発されたウェブアプリケーション向けのプログラミング言語
+JavaScriptのデメリットを解消することを目的に作られており、HTML風の構文を使うことも可能
+
+コンポーネント
+: UIを構築するための、小さく独立した部品
+UIとは独立しているため、再利用しやすい
+コンポーネントを組み合わせることで複雑なUIを作ることも可能
+
+---
+
+### Install React and Babel
+```bash
+# Reactとトランスコンパイル用のBabelをインストール
+$ yarn add -D react react-dom
+$ yarn add -D babel-loader @babel/core @babel/preset-env @babel/preset-react
+```
+
+---
+
+### Configure React
+`webpack.config.js`にReactトランスコンパイル用の設定を追加する
+
+- **webpack.config.js**
+    ```javascript
+    module.exports = {
+        // 〜省略〜
+        // ビルドしたJavaScriptにsource-mapを書き出す
+        devtool: 'inline-soruce-map',
+        // モジュール設定
+        module: {
+            rules: [
+                {
+                    // .js, .jsx ファイルを babel-loader でトランスコンパイル
+                    test: /\.js(x?)$/,
+                    exclude: /node_modules/, // node_modules/ 内のファイルは除外
+                    loader: 'babel-loader',
+                    // Babel のオプションを指定
+                    options: {
+                        // preset_env, react の構文拡張を有効に
+                        presets: [
+                            ["@babel/preset-env"],
+                            ["@babel/react"]
+                        ]
+                    }
+                }
+            ]
+        }
+    };
+    ```
+
+---
+
+### コンポーネント作成
+`React.Component`を継承して`ShoppingList`コンポーネントを作る
+
+- **src/shopping-list.jsx**
+    ```javascript
+    import React from 'react';
+
+    /**
+     * ShoppingListコンポーネント
+     * : React.Componentを継承して作成
+     * 
+     * Usage: <ShoppingList name="Mark" />
+     */
+    export default class ShoppingList extends React.Component {
+        // renderメソッドでコンポーネント内部のHTMLタグを定義
+        render() {
+            return (
+                <div className="shopping-list">
+                <h1>Shopping List for {this.props.name}</h1>
+                <ul>
+                    <li>Instagram</li>
+                    <li>WhatsApp</li>
+                    <li>Oculus</li>
+                </ul>
+                </div>
+            );
+        }
+    }
+    ```
+
+---
+
+### Reactアプリケーション作成
+上記で作成したShoppingListコンポーネントを使って、Webアプリケーションを作成する
+
+- **public/index.html**
+    - 開発サーバーのエントリーポイント
+    ```html
+    <!DOCTYPE html>
+    <html lang="ja">
+        <head>
+            <meta charset="utf-8">
+        </head>
+        <body>
+            <!-- Reactにより id="root" の要素が置き換えられる -->
+            <div id="root"></div>
+            <!-- React + webpack によりバンドルされた bundle.js を読み込む -->
+            <script src="./bundle.js"></script>
+        </body>
+    </html>
+    ```
+- **src/index.jsx**
+    - Reactアプリケーションのエントリーポイント
+        - `public/bundle.js`にバンドルされる
+    ```javascript
+    import React from 'react';
+    import ReactDOM from 'react-dom';
+    // ShoppingListコンポーネントを読み込む
+    import ShoppingList from './shopping-list.jsx';
+
+    // ReactDOMにより id="root" の要素を <ShoppingList name="Mark" /> に置き換える
+    ReactDOM.render(
+        <ShoppingList name="Mark" />,
+        document.getElementById('root')
+    );
+    ```
+
+必要なファイルを作成したら `webpack.config.js`を編集し、エントリーポイントを`src/index.jsx`に変更する
+
+- **webpack.config.js**
+    ```javascript
+    module.exports = {
+        // エントリーポイントを src/index.jsx に変更
+        entry: './src/index.jsx',
+        // 〜省略〜
+    }
+    ```
+
+開発サーバーを起動し http://localhost:3000 にアクセスする
 
 ```bash
-# create react project into `app` directory
-## yarn add g create-react-app && yarn create-react-app app
-$ yarn create react-app app
+$ yarn start
+# => .js, .jsx ファイルがBabelによりトランスコンパイル
+# => public/bundle.js にバンドルされる
+# => http://localhost:3000 で public/index.html が読み込まれる
 ```
+
+![react-get-started](./screenshot/01.react.png)
 
 ***
 

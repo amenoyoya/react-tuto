@@ -5,7 +5,7 @@ module.exports = {
     // webpack4系以降はmodeを指定しないと警告が出る
     mode: 'development',
     // エントリーポイント
-    entry: './src/index.js',
+    entry: './src/index.jsx',
     // 出力設定
     output: {
         // バンドル後のファイル名
@@ -13,8 +13,32 @@ module.exports = {
         // 出力先のパス（※絶対パスで指定すること）
         path: path.join(__dirname, 'public')
     },
+    // ビルドしたJavaScriptにsource-mapを書き出す
+    devtool: 'inline-soruce-map',
+    // モジュール設定
+    module: {
+        rules: [
+            {
+                // .js, .jsx ファイルを babel-loader でトランスコンパイル
+                test: /\.js(x?)$/,
+                exclude: /node_modules/, // node_modules/ 内のファイルは除外
+                loader: 'babel-loader',
+                // Babel のオプションを指定
+                options: {
+                    // preset_env, react の構文拡張を有効に
+                    presets: [
+                        ["@babel/preset-env"],
+                        ["@babel/react"]
+                    ]
+                }
+            }
+        ]
+    },
     // 開発サーバー設定
     devServer: {
+        /*historyApiFallback: {
+            index: 'index.html'
+        },*/
         // 起点ディレクトリを public/ に設定
         contentBase: path.join(__dirname, 'public'),
         // ポートを3000に設定
