@@ -50,6 +50,10 @@ class Board extends React.Component {
          * 以下のようにコピー（slice）に変更を加えてから setState した方が良い（イミュータビリティ）
          */
         const squares = this.state.squares.slice();
+        // 勝敗がついている場合や、すでに着手済みのマスの場合は、着手不可とする
+        if (calculateWinner(squares) || squares[i]) {
+            return;
+        }
         // xIsNextの値からマスに書き込む値（"O" | "X"）を決定
         squares[i] = this.state.xIsNext ? 'X' : 'O';
         // 着手の度にxIsNextの値を反転
@@ -60,7 +64,16 @@ class Board extends React.Component {
     }
 
     render() {
-        const status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
+        // 勝者判定
+        const winner = calculateWinner(this.state.squares);
+        let status;
+        if (winner) {
+            // 勝敗がついている場合は、勝者を表示
+            status = 'Winner: ' + winner;
+        } else {
+            // 未決着なら、次の着手プレイヤーを表示
+            status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
+        }
 
         return (
             <div>
@@ -103,6 +116,33 @@ class Game extends React.Component {
             </div>
         );
     }
+}
+
+/**
+ * ゲーム勝者判定関数
+ * WHEN: 一つのラインが同じ状態（"O" | "X"）
+ *   - 一つのライン:
+ *     - 横ライン:   [i*3+0, i*3+1, i*3+2] for i in [0..2]
+ *     - 縦ライン:   [i+0, i+3, i+6] for i in [0..2]
+ *     - 斜めライン: [0, 4, 8], [2, 4, 6]  
+ * THEN: その状態（"O" | "X"）を返す
+ * ELSE: nullを返す
+ */
+function calculateWinner(squares) {
+    const lines = [
+        [0, 1, 2], [3, 4, 5], [6, 7, 8],
+        [0, 3, 6], [1, 4, 7], [2, 5, 8],
+        [0, 4, 8], [2, 4, 6],
+    ];
+    for (let i = 0; i < lines.length; i++) {
+        const [a, b, c] = lines[i];
+        if (squares[a] && squares[a] === squares[b]
+            && squares[a] === squares[c])
+        {
+            return squares[a];
+        }
+    }
+    return null;
 }
 
 // ========== main ==========
