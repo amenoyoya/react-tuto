@@ -404,3 +404,79 @@ Reactコンポーネントはコンストラクタで `this.state` を設定す�
         3. Reactの再レンダータイミングの決定
             - イミュータブルなオブジェクトは、Reactで **pure component** を構築しやすくなる
             - イミュータブルなデータは変更があったかどうか簡単に分かるため、コンポーネントをいつ再レンダーすべきなのか決定しやすくなる
+
+---
+
+### 関数コンポーネント
+ここで Squareコンポーネントを**関数コンポーネント**に置き換える
+
+関数コンポーネント
+: `render`メソッドだけを有して 自分の`state`を持たないコンポーネントを、よりシンプルに書くための方法
+
+`React.Component`を継承するクラスを定義する代わりに、以下のような関数を定義する
+
+- `props`を入力として受け取る
+- 表示すべき内容を返す
+
+関数コンポーネントはクラスよりも書くのが楽であり、多くのコンポーネントはこれで書くことが可能
+
+- **src/index.jsx**
+    ```javascript
+    /**
+     * Square関数コンポーネント｜クリック可能なマス
+     * - Usage: <Square />
+     */
+    function Square(props) {
+        // クリック時に 親コンポーネントからprops経由で渡される onClick を実行
+        // 親コンポーネントからprops経由で渡される value を表示
+        return (
+            <button className="square" onClick={props.onClick}>
+                {props.value}
+            </button>
+        );
+    }
+    ```
+
+---
+
+### 手番の処理
+“O”がまだ盤面に出てこないという問題を修正する
+
+- **src/index.jsx**
+    ```diff
+    class Board extends React.Component {
+        constructor(props) {
+            super(props);
+            this.state = {
+                squares: Array(9).fill(null),
+    +           // 次の手番が"X"かどうかの状態を保持
+    +           xIsNext: true
+            };
+        }
+    ```
+
+次に、プレーヤが着手する度に `xIsNext` の値を反転させるように変更する
+
+- **src/index.jsx**
+    ```diff
+    handleClick(i) {
+        const squares = this.state.squares.slice();
+    -   squares[i] = 'X';
+    -   this.setState({squares: squares});
+    +   // xIsNextの値からマスに書き込む値（"O" | "X"）を決定
+    +   squares[i] = this.state.xIsNext ? 'X' : 'O';
+    +   // 着手の度にxIsNextの値を反転
+    +   this.setState({
+    +       squares: squares,
+    +       xIsNext: !this.state.xIsNext,
+    +   });
+    }
+
+    render() {
+    -   const status = 'Next player: X';
+    +   const status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
+    ```
+
+この変更により、“X” 側と “O” 側が交互に着手可能になる
+
+![xo-game](./screenshot/05.turn.png)

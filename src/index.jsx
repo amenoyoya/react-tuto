@@ -3,22 +3,17 @@ import ReactDOM from 'react-dom';
 import './index.css';
 
 /**
- * Squareコンポーネント｜クリック可能なマス
+ * Square関数コンポーネント｜クリック可能なマス
  * - Usage: <Square />
  */
-class Square extends React.Component {
+function Square(props) {
     // クリック時に 親コンポーネントからprops経由で渡される onClick を実行
     // 親コンポーネントからprops経由で渡される value を表示
-    render() {
-        return (
-            <button
-                className="square"
-                onClick={() => this.props.onClick()}
-            >
-                {this.props.value}
-            </button>
-        );
-    }
+    return (
+        <button className="square" onClick={props.onClick}>
+            {props.value}
+        </button>
+    );
 }
 
 /**
@@ -32,6 +27,8 @@ class Board extends React.Component {
         // 3ｘ3のSquareの状態を保持する
         this.state = {
             squares: Array(9).fill(null),
+            // 次の手番が"X"かどうかの状態を保持
+            xIsNext: true
         };
     }
 
@@ -53,12 +50,17 @@ class Board extends React.Component {
          * 以下のようにコピー（slice）に変更を加えてから setState した方が良い（イミュータビリティ）
          */
         const squares = this.state.squares.slice();
-        squares[i] = 'X';
-        this.setState({squares: squares});
+        // xIsNextの値からマスに書き込む値（"O" | "X"）を決定
+        squares[i] = this.state.xIsNext ? 'X' : 'O';
+        // 着手の度にxIsNextの値を反転
+        this.setState({
+            squares: squares,
+            xIsNext: !this.state.xIsNext,
+        });
     }
 
     render() {
-        const status = 'Next player: X';
+        const status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
 
         return (
             <div>
