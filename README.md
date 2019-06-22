@@ -167,7 +167,7 @@ $ yarn start
 
 ***
 
-## React導入 (1H)
+## React導入 (0.75H)
 
 ### What's React?
 React
@@ -335,163 +335,136 @@ $ sudo sysctl -p
 
 ***
 
-## Tutorial (1.5H)
+## webpackでcssバンドル (0.25H)
 
-参考: https://ja.reactjs.org/tutorial/tutorial.html
-
-**三目並べ**を作成する
-
-### 準備
-
-#### チュートリアル用のファイルの準備
-チュートリアル用のスタイルシートやスクリプトを準備する
-
+### Install loaders
 ```bash
-# srcディレクトリを clean up
-$ rm -f src/*
+# cssバンドル用に必要な style-loader, css-loader インストール
+$ yarn add -D style-loader css-loader
 ```
 
-- **src/index.css**
+---
+
+### Configure webpack
+`webpack.config.js`にcssバンドル用の設定を加える
+
+- **webpack.config.js**
+    ```javascript
+    module.exports = {
+        // 〜省略〜
+        // モジュール設定
+        module: {
+            rules: [
+                // 〜省略〜
+                {
+                    // .css ファイル: css-loader => style-loader の順に適用
+                    // - css-loader: cssをJSにトランスコンパイル
+                    // - style-loader: <link>タグにスタイル展開
+                    test: /\.css$/,
+                    use: [
+                        "style-loader",
+                        {
+                            loader: "css-loader",
+                            options: { url: false }
+                        }
+                    ]
+                }
+            ]
+        }
+    };
+    ```
+
+---
+
+### Reactアプリケーションにcss適用
+`src/style.css`を作成し、`src/index.jsx`から読み込んでみる
+
+- **src/style.css**
     ```css
+    :root {
+        --blue: #007bff;
+        --indigo: #6610f2;
+        --purple: #6f42c1;
+        --pink: #e83e8c;
+        --red: #dc3545;
+        --orange: #fd7e14;
+        --yellow: #ffc107;
+        --green: #28a745;
+        --teal: #20c997;
+        --cyan: #17a2b8;
+        --white: #fff;
+        --gray: #6c757d;
+        --gray-dark: #343a40;
+        --primary: #007bff;
+        --secondary: #6c757d;
+        --success: #28a745;
+        --info: #17a2b8;
+        --warning: #ffc107;
+        --danger: #dc3545;
+        --light: #f8f9fa;
+        --dark: #343a40;
+        --breakpoint-xs: 0;
+        --breakpoint-sm: 576px;
+        --breakpoint-md: 768px;
+        --breakpoint-lg: 992px;
+        --breakpoint-xl: 1200px;
+        --font-family-sans-serif: -apple-system, "BlinkMacSystemFont", "Helvetica Neue", Helvetica, "Arial", "ヒラギノ角ゴ ProN W3", "Hiragino Kaku Gothic ProN", "メイリオ", Meiryo, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+        --font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+    
+    *,
+    *::before,
+    *::after {
+        box-sizing: border-box;
+    }
+    
+    html {
+        font-family: sans-serif;
+        line-height: 1.15;
+        -webkit-text-size-adjust: 100%;
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    }
+
+    article, aside, figcaption, figure, footer, header, hgroup, main, nav, section {
+        display: block;
+    }
+
     body {
-        font: 14px "Century Gothic", Futura, sans-serif;
-        margin: 20px;
+        margin: 0 auto;
+        width: 80%;
+        font-family: -apple-system, "BlinkMacSystemFont", "Helvetica Neue", Helvetica, "Arial", "ヒラギノ角ゴ ProN W3", "Hiragino Kaku Gothic ProN", "メイリオ", Meiryo, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+        font-size: 1rem;
+        font-weight: 400;
+        line-height: 1.5;
+        color: #212529;
+        text-align: left;
+        background-color: #fff;
     }
 
-    ol, ul {
-        padding-left: 30px;
+    ul, ol {
+        color: #1e366a;
+        border-top: solid #1e366a 1px;
+        border-bottom: solid #1e366a 1px;
+        padding: 0.5em 1.5em;
     }
-
-    .board-row:after {
-        clear: both;
-        content: "";
-        display: table;
-    }
-
-    .status {
-        margin-bottom: 10px;
-    }
-
-    .square {
-        background: #fff;
-        border: 1px solid #999;
-        float: left;
-        font-size: 24px;
-        font-weight: bold;
-        line-height: 34px;
-        height: 34px;
-        margin-right: -1px;
-        margin-top: -1px;
-        padding: 0;
-        text-align: center;
-        width: 34px;
-    }
-
-    .square:focus {
-        outline: none;
-    }
-
-    .kbd-navigation .square:focus {
-        background: #ddd;
-    }
-
-    .game {
-        display: flex;
-        flex-direction: row;
-    }
-
-    .game-info {
-        margin-left: 20px;
+    
+    ul li, ol li {
+        line-height: 1.5;
+        padding: 0.5em 0;
     }
     ```
 - **src/index.jsx**
     ```javascript
-    import React from 'react';
-    import ReactDOM from 'react-dom';
-    import './index.css';
+    // style.cssを取り込む
+    import './style.css';
 
-    /**
-     * Squareコンポーネント｜クリック可能なマス
-     * - Usage: <Square />
-     */
-    class Square extends React.Component {
-        render() {
-            return (
-                <button className="square">
-                    {/* TODO */}
-                </button>
-            );
-        }
-    }
-
-    /**
-     * Boardコンポーネント｜3ｘ3のSqureコンポーネントから成るゲーム盤
-     * - Usage: <Board />
-     */
-    class Board extends React.Component {
-        renderSquare(i) {
-            return <Square />;
-        }
-
-        render() {
-            const status = 'Next player: X';
-
-            return (
-                <div>
-                    <div className="status">{status}</div>
-                    <div className="board-row">
-                    {this.renderSquare(0)}
-                    {this.renderSquare(1)}
-                    {this.renderSquare(2)}
-                    </div>
-                    <div className="board-row">
-                    {this.renderSquare(3)}
-                    {this.renderSquare(4)}
-                    {this.renderSquare(5)}
-                    </div>
-                    <div className="board-row">
-                    {this.renderSquare(6)}
-                    {this.renderSquare(7)}
-                    {this.renderSquare(8)}
-                    </div>
-                </div>
-            );
-        }
-    }
-
-    /**
-     * Gameコンポーネント｜Boardコンポーネントとゲーム情報を表示
-     * - Usage: <Game />
-     */
-    class Game extends React.Component {
-        render() {
-            return (
-                <div className="game">
-                    <div className="game-board">
-                        <Board />
-                    </div>
-                    <div className="game-info">
-                        <div>{/* status */}</div>
-                        <ol>{/* TODO */}</ol>
-                    </div>
-                </div>
-            );
-        }
-    }
-
-    // ========== main ==========
-    ReactDOM.render(
-        <Game />,
-        document.getElementById('root')
-    );
+    // 〜省略〜
     ```
 
-#### 開発サーバー実行
-最低限のスタイルシート, スクリプトを準備できたら以下のコマンドで開発サーバーを起動する
+![css-in-react](./screenshot/02.css.png)
 
-```bash
-$ yarn start
-# => http://localhost:3000 で開発サーバー実行
-```
+***
 
-![screenshot](./screenshot/02.index.png)
+## Tutorial (1.5H)
+
+Show [Tutorial.md](./Tutorial.md)
