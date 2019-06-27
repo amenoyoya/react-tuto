@@ -468,3 +468,9 @@ $ yarn add -D style-loader css-loader
 ## Tutorial (3H)
 
 Show [Tutorial.md](./Tutorial.md)
+
+***
+
+## Redux導入
+
+Show [Redux.md](./Redux.md)
