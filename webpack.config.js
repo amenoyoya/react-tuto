@@ -5,7 +5,7 @@ module.exports = {
     // webpack4系以降はmodeを指定しないと警告が出る
     mode: 'development',
     // エントリーポイント
-    entry: './src/redux.jsx',
+    entry: './redux-src/index.js',
     // 出力設定
     output: {
         // バンドル後のファイル名
