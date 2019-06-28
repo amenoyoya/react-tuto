@@ -1,8 +1,8 @@
 import React from 'react';
 
-const Result = () => (
+const Result = ({result}) => (
   <div>
-    Result: <span>some value</span>
+    Result: <span>{result}</span>
   </div>
 );
 

@@ -53,7 +53,7 @@ View
 
 ### Install
 ```bash
-$ yarn add -D react-redux
+$ yarn add -D redux react-redux
 ```
 
 ---
