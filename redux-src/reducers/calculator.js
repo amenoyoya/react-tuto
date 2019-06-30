@@ -6,6 +6,13 @@ const initialAppState = {
   showingResult: false,
 }
 
+/**
+ * Reducer.calculator
+ * Actionの種類に応じて Calculatorの状態を変換するメソッド
+ * @param {*} state Action受信前のCalculatorの状態
+ * @param {*} action 受信するActionオブジェクト
+ * @return {*} state Actionを反映した後のCalculatorの状態
+ */
 const calculator = (state = initialAppState, action) => {
   if (action.type === actionTypes.INPUT_NUMBER) {
     return {

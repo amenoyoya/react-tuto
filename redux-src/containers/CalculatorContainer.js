@@ -7,6 +7,11 @@ import NumBtn from '../components/NumBtn';
 import PlusBtn from '../components/PlusBtn';
 import Result from '../components/Result';
 
+/**
+ * CalculatorContainer
+ * - Calculatorの状態をViewに反映
+ * - CalculatorへのActionの発火点
+ */
 class CalculatorContainer extends Component {
   render() {
     const {calculator, actions} = this.props;
@@ -39,10 +44,21 @@ class CalculatorContainer extends Component {
   }
 }
 
+/**
+ * mapState
+ * 各Containerの状態をマッピング
+ * @param {*} state Reducerから送られてくる状態オブジェクト
+ * @param {*} ownProps 各Containerのprops
+ * @return {*} map Containerとstateオブジェクトを関連付けしたマップ
+ */
 const mapState = (state, ownProps) => ({
   calculator: state.calculator,
 });
 
+/**
+ * mapDispatch
+ * 各ContainerのActionをマッピング
+ */
 const mapDispatch = (dispatch) => ({
   actions: bindActionCreators(actions, dispatch),
 });
