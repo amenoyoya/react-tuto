@@ -471,6 +471,6 @@ Show [Tutorial.md](./Tutorial.md)
 
 ***
 
-## Redux導入
+## Redux導入（3H）
 
 Show [Redux.md](./Redux.md)
