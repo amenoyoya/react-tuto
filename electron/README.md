@@ -17,7 +17,10 @@
 $ yarn init -y
 
 # install packages
-$ yarn add electron react react-dom webpack webpack-dev-server babel-loader @babel/core @babel/preset-env @babel/preset-react
+$ yarn add electron react react-dom webpack babel-loader @babel/core @babel/preset-env @babel/preset-react
+
+# install Material UI package
+$ yarn add @material-ui/core
 ```
 
 ***
@@ -26,13 +29,13 @@ $ yarn add electron react react-dom webpack webpack-dev-server babel-loader @bab
 
 ```bash
 ./
-|_ dest/ # Webpack出力先ディレクトリ
+|_ public/ # Webpack出力先ディレクトリ
 |   |_ (index.js) # WebpackでバンドルされたJSファイル
+|   |_ index.html # フロント画面
 |
 |_ src/ # Webpackソーススクリプト格納ディレクトリ
 |   |_ index.jsx # Webpackでバンドルされるエントリーポイント
 |
-|_ index.html # フロント画面
 |_ main.js # Electronソーススクリプト
 |_ package.json # プロジェクト構成設定
 |_ webpack.config.js # Webpackバンドル設定
@@ -46,10 +49,10 @@ module.exports = {
   mode: 'development', // 'production'
   // ソーススクリプト: ./src/index.jsx
   entry: './src/index.jsx',
-  // 出力先: ./dest/index.js
+  // 出力先: ./public/index.js
   output: {
     filename: 'index.js',
-    path: path.join(__dirname, 'dest')
+    path: path.join(__dirname, 'public')
   },
   // モジュール設定
   module: {
@@ -71,15 +74,6 @@ module.exports = {
       },
     ]
   },
-  // 開発サーバー設定
-  devServer: {
-    // 起点ディレクトリを ./ に設定
-    contentBase: __dirname,
-    // ポートを3000に設定
-    port: 3000,
-    // ブラウザを自動的に開く
-    open: true
-  }
 };
 ```
 
@@ -119,7 +113,7 @@ ReactDOM.render(
     <!-- id: root の要素を React で制御 -->
     <div id="root"></div>
     <!-- Webpack でバンドルしたJSファイルを読み込む -->
-    <script src="./dest/index.js"></script>
+    <script src="./index.js"></script>
 </body>
 </html>
 ```
@@ -147,7 +141,7 @@ app.on('activate', function() {
 function createWindow() {
   mainWindow = new BrowserWindow({width: 800, height: 600})
   mainWindow.loadURL(url.format({ // 読み込むコンテンツを指定
-    pathname: path.join(__dirname, 'index.html'),
+    pathname: path.join(__dirname, 'public', 'index.html'),
     protocol: 'file:',
     slashes: true  
   }))
@@ -163,32 +157,23 @@ function createWindow() {
 {
   (略)
   "scripts": {
-    "server": "webpack-dev-server --hot",
-    "start": "webpack && electron main.js"
+    "start": "webpack --watch --watch-poll & electron main.js"
   }
 }
 ```
 
 ***
 
-## 開発
+## Electron開発
 
-Webpack開発サーバを用いてフロント画面（React）を開発する
-
-```bash
-# webpack-dev-server --hot
-$ yarn server
-```
-
-http://localhost:3000 で開発サーバが稼働する
-
-***
-
-## Electron実行
-
-Webpackでフロント画面（React）をバンドルし、Electron（`main.js`）を実行する
+Webpack + React でフロント画面を開発し、Electron で画面を描画する
 
 ```bash
-# webpack && electron main.js
+# webpack --watch --watch-poll & electron main.js
+## webpack --watch --watch-poll: ソースファイル変更を検知して自動的にバンドル実行
+### & でつなげることで webpack 監視バンドルをバックグラウンド実行
+## electron main.js: Electron で main.js を実行
 $ yarn start
 ```
+
+Electron ではファイル変更時に画面を自動的にリロードできないため `Ctrl + R` で画面を更新する必要がある（Webpack 自体はファイル変更を検知して自動的にバンドルを実行する）

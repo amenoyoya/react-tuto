@@ -19,7 +19,7 @@ app.on('activate', function() {
 function createWindow() {
   mainWindow = new BrowserWindow({width: 800, height: 600})
   mainWindow.loadURL(url.format({ // 読み込むコンテンツを指定
-    pathname: path.join(__dirname, 'index.html'),
+    pathname: path.join(__dirname, 'public', 'index.html'),
     protocol: 'file:',
     slashes: true  
   }))

@@ -1,13 +1,14 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
+import Button from '@material-ui/core/Button'
 
 // コンポーネントを定義
 export default class App extends React.Component {
   render () {
     return (
-      <div>
-        <h1>Test</h1>
-      </div>
+      <Button variant="contained" color="primary">
+        Hello World
+      </Button>
     )
   }
 }

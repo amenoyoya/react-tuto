@@ -4,10 +4,10 @@ module.exports = {
   mode: 'development', // 'production'
   // ソーススクリプト: ./src/index.jsx
   entry: './src/index.jsx',
-  // 出力先: ./dest/index.js
+  // 出力先: ./public/index.js
   output: {
     filename: 'index.js',
-    path: path.join(__dirname, 'dest')
+    path: path.join(__dirname, 'public')
   },
   // モジュール設定
   module: {
@@ -29,13 +29,4 @@ module.exports = {
       },
     ]
   },
-  // 開発サーバー設定
-  devServer: {
-    // 起点ディレクトリを ./ に設定
-    contentBase: __dirname,
-    // ポートを3000に設定
-    port: 3000,
-    // ブラウザを自動的に開く
-    open: true
-  }
 };
