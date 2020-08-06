@@ -24,9 +24,41 @@
 ### Setup
 ```bash
 # build docker containers
-$ docker-compose build
+## create user: worker (in service://node) => user id: $UID (same with current working user)
+$ export UID && docker-compose build
 
 # add execution permission to ./n
-# ./n: $ docker-compose run --service-ports $*
+# ./n: $ docker-compose run --service-ports node $*
 $ chmod +x ./n
+```
+
+***
+
+## 1. How to build a movie search app using React Hooks
+
+React + Hook で映画検索アプリを作成する
+
+参考: [How to build a movie search app using React Hooks](https://www.freecodecamp.org/news/how-to-build-a-movie-search-app-using-react-hooks-24eb72ddfaf7/)
+
+```bash
+# create react project: hooked
+$ ./n npx create-react-app hooked
+
+# hooked/
+# |_ public/ # document root
+# |  |_ index.html
+# |  :
+# |
+# |_ src/
+# |  |_ App.css # styles
+# |  |_ App.js # main script: handles the API request
+# |  :
+# |
+# |_ package.json
+
+# start development server
+# $ ./n npm --prefix hooked start
+$ ./n yarn --cwd hooked start
+
+# => server: http://localhost:32300 => service://node:3000
 ```

@@ -4,8 +4,11 @@ services:
   # node service container: node:12-alpine
   # $ docker-compose run node $command ...
   node:
-    # build from ./Dockerfile
-    build: ./
+    build:
+      context: ./ # build from ./Dockerfile
+      args:
+        # use current working user id
+        UID: $UID
     logging:
       driver: json-file
     ports:
