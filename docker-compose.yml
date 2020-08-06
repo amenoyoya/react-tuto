@@ -12,15 +12,16 @@ services:
     logging:
       driver: json-file
     ports:
-      # http://localhost:32300 => service://node:3000
-      - "32300:3000"
+      # http://localhost:32300 => service://node:32300
+      - "32300:32300"
     volumes:
       # ./package.json => service://node:/package.json (read + write)
-      ## $ npm i --prefix '/' => module install in service://node:/node_modules/
+      ## $ yarn add --cwd / ... => module install in service://node:/node_modules/
       - ./package.json:/package.json:rw
-      - ./package-lock.json:/package-lock.json:rw
       
       # ./ => service:node:/work/
       - ./:/work/
     environment:
       TZ: Asia/Tokyo
+      # Zero server port: 32300
+      PORT: 32300
