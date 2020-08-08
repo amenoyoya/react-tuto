@@ -1,5 +1,8 @@
 import React, { useState } from "react";
 
+/**
+ * <Search search={(searchValue) => null} />
+ */
 const Search = (props) => {
   const [searchValue, setSearchValue] = useState("");
   
@@ -13,7 +16,7 @@ const Search = (props) => {
 
   const callSearchFunction = (e) => {
     e.preventDefault();
-    props.search(searchValue);
+    props.search(searchValue); // 親コンポーネントから search 関数を受け取り、それを実行
     resetInputField();
   }
 

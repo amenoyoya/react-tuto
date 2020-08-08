@@ -355,6 +355,121 @@ export default (props) => {
 
 ![useeffect.gif](./img/useeffect.gif)
 
+### useReducer | 複雑な状態管理
+`useReducer` は `useState` の代替品である（Redux の reducer 機能を React に逆輸入したもの）
+
+`(state, action) => newState` という型のリデューサ (reducer) を受け取り、現在の state を dispatch メソッドとペアにして返す
+
+通常、useReducer が useState より好ましいのは、複数の値にまたがる複雑な state ロジックがある場合や、前の state に基づいて次の state を決める必要がある場合である
+
+また、useReducer を使えばコールバックの代わりに dispatch を下位コンポーネントに渡せるようになるため、複数階層にまたがって更新を発生させるようなコンポーネントではパフォーマンスの最適化にもなる
+
+```javascript
+/**
+ * 複雑な状態管理
+ * @state int count
+ * @action button.onclick (action) => {
+ *   action.increment => state.count++
+ *   action.decrement => state.count--
+ * }
+ */
+import {Helmet} from 'react-helmet-async'
+import { useReducer } from 'react'
+
+const style = {
+  fontSize: '16px',
+  margin: '20px auto',
+  width: '80%',
+}
+const btn = {
+  appearance: 'none',
+  border: 0,
+  borderRadius: '5px',
+  background: '#4676D7',
+  color: '#fff',
+  padding: '8px 16px',
+  margin: '5px 20px',
+  fontSize: '20px',
+}
+
+/**
+ * useReducer に渡す reducer: 状態 + アクション => 処理 => 状態’ の整理処理を行う関数
+ * ※ なぜ reducer と呼ばれるか: https://shgam.hatenadiary.jp/entry/2018/11/10/004819
+ * @param {*} state 現在の状態
+ * @param {*} action 実行するアクション
+ * @return {*} state2 次の状態
+ */
+const reducer = (state, action) => {
+  switch (action.type) {
+    case 'increment':
+      return {count: state.count + 1}
+    case 'decrement':
+      return {count: state.count - 1}
+    default:
+      throw new Error()
+  }
+}
+
+export default () => {
+  /**
+   * useReducer: (reducer関数, 初期state) => 状態変数, 状態更新関数
+   */
+  const [state, dispatch] = useReducer(reducer, {count: 0})
+  return (
+    <section style={style}>
+      <Helmet>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <title>React状態管理 | reducer による複雑なアクション</title>
+      </Helmet>
+      <p>Count: {state.count}</p>
+      <button style={btn} onClick={() => dispatch({type: 'decrement'})}>-</button>
+      <button style={btn} onClick={() => dispatch({type: 'increment'})}>+</button>
+    </section>
+  )
+}
+```
+
+![usereducer.gif](./img/usereducer.gif)
+
+### Test: Open Movie Database API
+Open Movie Database API (OMDb API) を使って映画検索を行う処理の動作確認を行う
+
+```javascript
+// hooked/test/omdbapi.jsx
+import {Helmet} from 'react-helmet-async';
+
+export default () => {
+  // 送信イベント: omdbapi で映画を検索
+  const onsubmit = (e) => {
+    e.preventDefault() // デフォルトの submit イベントは起こさない
+
+    const searchValue = document.getElementById('search').value
+    // ?apikey={your own api key}
+    // following apikey is provided by https://www.freecodecamp.org/news/how-to-build-a-movie-search-app-using-react-hooks-24eb72ddfaf7/
+    fetch(`https://www.omdbapi.com/?s=${searchValue}&apikey=4a3b711b`)
+      .then(response => response.json())
+      .then(jsonResponse => {
+        console.log(jsonResponse)
+      })
+  }
+  return (
+    <div>
+      <Helmet>
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+      </Helmet>
+      <form onSubmit={onsubmit}>
+        <input id="search" type="text" />
+        <button type="submit">search</button>
+      </form>
+    </div>
+  )
+}
+```
+
+http://localhost:3000/test/omdbapi/
+
+![omdbapi.png](./img/omdbapi.png)
+
 ### Header component
 ```javascript
 // hooked/components/Header.jsx
