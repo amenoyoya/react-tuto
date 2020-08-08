@@ -1,2 +1,5 @@
 node_modules/
 .zero/
+
+/package.json
+/yarn.lock

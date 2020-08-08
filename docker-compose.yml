@@ -1,9 +1,10 @@
-version: "3.3"
+# ver 3.6 >= required: enable '-w' option for 'docker-compose exec'
+version: "3.6"
 
 services:
-  # node service container: node:12-alpine
-  # $ docker-compose run node $command ...
-  node:
+  # cli service container: node:12-alpine
+  # $ docker-compose exec cli $command ...
+  cli:
     build:
       context: ./ # build from ./Dockerfile
       args:
@@ -11,17 +12,12 @@ services:
         UID: $UID
     logging:
       driver: json-file
-    ports:
-      # http://localhost:32300 => service://node:32300
-      - "32300:32300"
+    # tcp://localhost:<port> => service://cli:<port>
+    network_mode: host
+    # enable terminal
+    tty: true
     volumes:
-      # ./package.json => service://node:/package.json (read + write)
-      ## $ yarn add --cwd / ... => module install in service://node:/node_modules/
-      - ./package.json:/package.json:rw
-      
       # ./ => service:node:/work/
       - ./:/work/
     environment:
       TZ: Asia/Tokyo
-      # Zero server port: 32300
-      PORT: 32300

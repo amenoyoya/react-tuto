@@ -13,7 +13,7 @@ RUN apk update && apk upgrade && \
     : 'Fix permission' && \
     chown -R $UID /usr/local/share/.config/
 
-# 作業ディレクトリ: ./ => service://node:/work/
+# 作業ディレクトリ: ./ => service://cli:/work/
 WORKDIR /work/
 
 # 作業ユーザ: Docker実行ユーザ

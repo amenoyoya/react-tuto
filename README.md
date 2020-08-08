@@ -5,30 +5,35 @@
 ## Environment
 
 - OS: Ubuntu 20.04
+- Shell: bash
 - Editor: VSCode
 - Docker: 19.03.12
     - docker-compose: 1.26.0
 
 ### Structure
 ```bash
-./ # => service://node:/work/:rw
+./ # => service://cli:/work/:rw
 |_ package.json # node package management file
-|_ n # command alias: docker-compose run node $*
-|_ Dockerfile # service://node docker build conf
+|_ n # command alias: docker-compose exec $opt cli $*
+|_ Dockerfile # service://cli docker build conf
 |_ docker-compose.yml # docker compose
-                      # - service://node <node:12-alpine>
-                      #   - $ docker-compose run node <command> ...
-                      #   - http://localhost:32300 => service://node:32300
+                      # - service://cli <node:12-alpine>
+                      #   - $ docker-compose exec [opt] cli <command> ...
+                      #   - tcp://localhost:<port> => service://cli:<port>
 ```
 
 ### Setup
 ```bash
 # build docker containers
-## create user: worker (in service://node) => user id: $UID (same with current working user)
+## create user: worker (in service://cli) => user id: $UID (same with current working user)
 $ export UID && docker-compose build
 
+# launch docker containers
+## tcp://localhost:<port> => service://cli:<port>
+$ docker-compose up -d
+
 # add execution permission to ./n
-# ./n: $ docker-compose run --service-ports node $*
+# ./n: $ docker-compose exec $opt cli $*
 $ chmod +x ./n
 ```
 
@@ -42,8 +47,8 @@ $ chmod +x ./n
 ```bash
 ./
 |_ app/ # main app dir
-|  |_ index.jsx # http://localhost:32300/ (React App)
-|  |_ time.js # http://localhost:32300/ (Nodejs API)
+|  |_ index.jsx # http://localhost:3000/ (React App)
+|  |_ time.js # http://localhost:3000/ (Nodejs API)
 |
 |_ .babelrc # babel conf file
 |_ package.json
@@ -56,8 +61,7 @@ $ chmod +x ./n
 ```javascript
 const moment = require("moment")
 module.exports = (req, res) => {
-  var time = moment().format('LT');   // 11:51 AM
-  res.send({time: time })
+  res.send({time: moment().format('LT')})
 }
 ```
 
@@ -82,7 +86,7 @@ export default class extends React.Component {
 # Run zero server in ./app/
 $ ./n zero app
 
-# server: http://localhost:32300 => service://node:32300
+# server: http://localhost:3000 => service://cli:3000
 ```
 
 ***
